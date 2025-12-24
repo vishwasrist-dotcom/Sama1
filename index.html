@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merry Christmas Samadhi</title>
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        red: {
+                            900: '#4a0000',
+                            800: '#6d0000',
+                            700: '#8B0000',
+                            600: '#a50000',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Great+Vibes&family=Inter:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #a50000 0%, #4a0000 100%);
+            margin: 0;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .font-serif-display {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-cursive {
+            font-family: 'Great Vibes', cursive;
+        }
+
+        /* --- Envelope Styles --- */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1a0505 0%, #000 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease 0.8s, visibility 1s ease 0.8s;
+            perspective: 1200px;
+        }
+
+        .envelope-container {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            cursor: pointer;
+            transition: transform 0.5s ease;
+        }
+
+        .envelope-container:hover {
+            transform: scale(1.02);
+        }
+
+        /* NEW: Explicit Back Layer */
+        .envelope-back {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #7f1d1d;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            z-index: 5;
+        }
+
+        /* Wrapper for Pockets (Front Layers) */
+        .envelope-body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+            /* Let clicks pass through to letter if needed, though flap/seal handles click */
+        }
+
+        /* The triangle flaps that make the pocket */
+        .pocket-left {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 110px 0 110px 160px;
+            /* half width */
+            border-color: transparent transparent transparent #991b1b;
+        }
+
+        .pocket-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 110px 160px 110px 0;
+            border-color: transparent #8a1616 transparent transparent;
+        }
+
+        .pocket-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 160px 120px 160px;
+            border-color: transparent transparent #b91c1c transparent;
+            transform-origin: bottom;
+        }
+
+        /* The top flap that opens */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 120px 160px 0 160px;
+            border-color: #991b1b transparent transparent transparent;
+            z-index: 30;
+            transform-origin: top;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.8s;
+        }
+
+        /* Opened State */
+        .envelope-container.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+            /* Behind Back (5) */
+        }
+
+        .envelope-container.open .letter-card {
+            transform: translateY(-80px);
+            transition-delay: 0.4s;
+            z-index: 15;
+            /* Ensure it stays above back but below pockets if logic requires, actually z-10 is fine */
+        }
+
+        /* The Letter Inside */
+        .letter-card {
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            height: 90%;
+            background: #fffbef;
+            z-index: 10;
+            /* Between Back (5) and Pockets (20) */
+            transition: transform 0.8s ease;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 20px;
+        }
+
+        /* Wax Seal */
+        .wax-seal {
+            position: absolute;
+            top: 120px;
+            /* Adjust to sit at flap tip */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Start centered on tip */
+            width: 55px;
+            height: 55px;
+            background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+            border: 2px solid #b8860b;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Great Vibes', cursive;
+            color: #5c3a00;
+            font-weight: bold;
+            font-size: 28px;
+            transition: all 0.5s ease;
+        }
+
+        .wax-seal::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px dashed rgba(92, 58, 0, 0.3);
+            border-radius: 50%;
+        }
+
+        .envelope-container.open .wax-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(1.5);
+            pointer-events: none;
+        }
+
+        /* --- Existing Animations --- */
+        @keyframes reveal {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+                filter: blur(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-reveal {
+            animation: reveal 1s ease-out forwards;
+        }
+
+        /* We'll control this via JS class enabling */
+        .reveal-on-load {
+            opacity: 0;
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .gold-text {
+            background: linear-gradient(to bottom, #fff9c4, #facc15, #854d0e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Music Prompt Pulse - Now part of Envelope guide */
+        .tap-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 0.9;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(250, 204, 21, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="pb-20" onload="initPage()">
+
+    <!-- === LOADING ENVELOPE === -->
+    <div id="loading-screen">
+        <div class="envelope-container" id="myEnvelope" onclick="openInvitation()">
+            <div class="envelope-back"></div>
+            <div class="letter-card">
+                <p class="font-serif-display text-red-900/80 font-bold text-xs uppercase tracking-widest mt-2">For
+                    Samadhi</p>
+            </div>
+            <div class="envelope-body">
+                <div class="pocket-left"></div>
+                <div class="pocket-right"></div>
+                <div class="pocket-bottom"></div>
+            </div>
+            <div class="envelope-flap"></div>
+            <div class="wax-seal">V</div>
+        </div>
+        <p class="text-white/40 text-sm font-serif-display mt-10 tracking-[0.2em] animate-pulse">Tap the seal to open
+        </p>
+    </div>
+
+    <!-- === MAIN SITE CONTENT (Hidden Initially) === -->
+    <div id="main-site" class="transition-opacity duration-1000 opacity-0 pointer-events-none">
+
+        <!-- Snow Canvas -->
+        <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none z-10"></canvas>
+
+        <!-- Hidden Settings Toggle -->
+        <nav class="fixed top-0 w-full p-4 flex justify-end items-center z-50">
+            <button onclick="event.stopPropagation(); openAdmin();"
+                class="p-2.5 bg-white/5 backdrop-blur-md rounded-full border border-white/10 opacity-20 hover:opacity-100 transition-opacity">
+                <i data-lucide="settings" class="w-5 h-5 text-yellow-400/70"></i>
+            </button>
+        </nav>
+
+        <main
+            class="relative z-30 flex flex-col items-center justify-center min-h-screen px-5 pt-10 text-center overflow-y-auto">
+            <!-- Floating Star Icon -->
+            <div class="animate-float mb-6">
+                <svg class="w-12 h-12 md:w-16 md:h-16" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                        fill="#FACC15" />
+                </svg>
+            </div>
+
+            <h2
+                class="text-xs md:text-sm font-serif-display italic tracking-[0.3em] uppercase mb-3 opacity-60 reveal-node">
+                A Heartfelt Message For
+            </h2>
+
+            <h1 class="text-5xl md:text-7xl font-serif-display font-black mb-8 gold-text reveal-node leading-tight">
+                Merry Christmas <br> Samadhi
+            </h1>
+
+            <div class="w-full max-w-lg glass-card p-6 md:p-10 rounded-3xl reveal-node" style="animation-delay: 0.3s">
+                <p class="text-base md:text-xl font-serif-display italic leading-relaxed text-white/90">
+                    "Dear Samadhi I Hope you read this and if your read this,I want to Thaxs For give a Strong Hope feel
+                    to unuseful painful my life and You brought light to my life, which was filled with darkness.Also i
+                    want to keep you gave light forever with me in my life and I always fraid to lost you in my
+                    life.However I give my harted wish to you for May this festive season bring peace, kindness, and
+                    hope into your lives. Wishing you and your loved ones good health, happiness, and success in the
+                    year ahead."
+                </p>
+            </div>
+
+            <div class="mt-12 reveal-node" style="animation-delay: 0.6s">
+                <p class="text-[9px] tracking-[0.3em] uppercase opacity-40 mb-2">From</p>
+                <p id="displaySender" class="text-3xl md:text-4xl font-cursive text-yellow-400">
+                    Your Friend Vishwa
+                </p>
+            </div>
+        </main>
+
+        <!-- Admin Modal -->
+        <div id="adminModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/95 backdrop-blur-sm" onclick="closeAdmin()"></div>
+            <div class="relative bg-[#111] border border-white/10 p-6 rounded-3xl w-full max-w-xs shadow-2xl"
+                onclick="event.stopPropagation()">
+                <h3 class="text-lg font-bold mb-4 text-yellow-500">Update Content</h3>
+                <div id="loginStep">
+                    <input type="password" id="passInput" placeholder="Passcode"
+                        class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-center text-lg mb-4 outline-none text-white">
+                    <button onclick="checkPass()"
+                        class="w-full bg-yellow-600 py-3 rounded-xl font-bold text-white">Verify</button>
+                </div>
+                <div id="uploadStep" class="hidden space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-gray-500 uppercase ml-1">Change Music File</label>
+                        <input type="file" id="audioInput" accept="audio/*"
+                            class="block w-full text-xs text-gray-400 file:bg-yellow-600 file:text-white file:rounded-full file:border-0 file:px-3 file:py-1">
+                        <p class="text-[9px] text-gray-400 mt-1 italic">*This saves to your local browser storage.</p>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-gray-500 uppercase ml-1">Sender Name</label>
+                        <input type="text" id="senderInput" placeholder="Your Name"
+                            class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-white">
+                    </div>
+                    <button onclick="saveSettings()"
+                        class="w-full bg-green-700 py-3 rounded-xl font-bold text-white">Save Changes</button>
+                    <button onclick="resetToDefault()"
+                        class="w-full bg-red-900/40 text-red-200 py-2 rounded-xl text-xs">Reset to Original
+                        Music</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="nc.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        lucide.createIcons();
+
+        const music = document.getElementById('bgMusic');
+        let musicStarted = false;
+        let isOpening = false;
+
+        function initPage() {
+            // Load saved data immediately but don't play music yet
+            loadSavedData();
+
+            // Correct Sender Typo from original file automatically if still default
+            const display = document.getElementById('displaySender');
+            if (display.innerText.includes('Your Frend')) {
+                display.innerText = 'Your Friend Vishwa';
+            }
+        }
+
+        function openInvitation() {
+            if (isOpening) return;
+            isOpening = true;
+
+            const envelope = document.getElementById('myEnvelope');
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainSite = document.getElementById('main-site');
+
+            // 1. Play Music (Interaction Trigger)
+            music.play().then(() => {
+                musicStarted = true;
+                console.log("Music started");
+            }).catch(e => console.log("Music play failed:", e));
+
+            // 2. Animate Envelope
+            envelope.classList.add('open');
+
+            // 3. Transition to Main Site
+            // Wait for envelope animation (approx 0.8s flap + some delay)
+            setTimeout(() => {
+                // Fade out loading screen
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.visibility = 'hidden';
+
+                // Show Main Site
+                mainSite.style.pointerEvents = 'auto';
+                mainSite.style.opacity = '1';
+
+                // Trigger animations for text
+                const nodes = document.querySelectorAll('.reveal-node');
+                nodes.forEach((node, index) => {
+                    node.classList.add('animate-reveal');
+                    // Stagger animations slightly if they share delay
+                    // but they have inline styles for delay anyway, so just adding class is enough
+                });
+
+            }, 1500); // 1.5s total wait to enjoy the opening
+        }
+
+        // Snow Animation Logic
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+
+        class Flake {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speed = Math.random() * 0.8 + 0.4;
+                this.opacity = Math.random() * 0.4 + 0.1;
+            }
+            update() {
+                this.y += this.speed;
+                if (this.y > canvas.height) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < 70; i++) particles.push(new Flake());
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Persistent Storage & Settings
+        function loadSavedData() {
+            const savedAudio = localStorage.getItem('christmas_audio');
+            const savedSender = localStorage.getItem('christmas_sender');
+
+            if (savedAudio) music.src = savedAudio;
+            if (savedSender) document.getElementById('displaySender').innerText = savedSender;
+        }
+
+        function openAdmin() { document.getElementById('adminModal').classList.remove('hidden'); }
+        function closeAdmin() {
+            document.getElementById('adminModal').classList.add('hidden');
+            document.getElementById('loginStep').classList.remove('hidden');
+            document.getElementById('uploadStep').classList.add('hidden');
+            document.getElementById('passInput').value = '';
+        }
+
+        function checkPass() {
+            if (document.getElementById('passInput').value === '9753') {
+                document.getElementById('loginStep').classList.add('hidden');
+                document.getElementById('uploadStep').classList.remove('hidden');
+            }
+        }
+
+        function resetToDefault() {
+            localStorage.removeItem('christmas_audio');
+            music.src = 'nc.mp3';
+            music.load();
+            if (musicStarted) music.play();
+            closeAdmin();
+        }
+
+        function saveSettings() {
+            const file = document.getElementById('audioInput').files[0];
+            const sender = document.getElementById('senderInput').value;
+
+            if (sender) {
+                localStorage.setItem('christmas_sender', sender);
+                document.getElementById('displaySender').innerText = sender;
+            }
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    localStorage.setItem('christmas_audio', e.target.result);
+                    music.src = e.target.result;
+                    // Dont play immediately here if in loading screen, 
+                    // but usually admin is accessed after load.
+                    if (musicStarted) music.play();
+                    closeAdmin();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                closeAdmin();
+            }
+        }
+    </script>
+</body>
+
+</html>
